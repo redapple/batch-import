@@ -61,7 +61,7 @@ public class Importer {
     // todo nodes and rels-files in config
     // todo graphdb in config
     public static void main(String[] args) throws IOException {
-        System.err.println("Usage java -jar batchimport.jar data/dir nodes.csv relationships.csv [node_index node-index-name fulltext|exact nodes_index.csv rel_index rel-index-name fulltext|exact rels_index.csv ....]");
+        System.out.println("Usage java -jar batchimport.jar data/dir nodes.csv relationships.csv [node_index node-index-name fulltext|exact nodes_index.csv rel_index rel-index-name fulltext|exact rels_index.csv ....]");
 
         final Config config = Config.convertArgumentsToConfig(args);
 
@@ -84,6 +84,7 @@ public class Importer {
         final LineData data = createLineData(reader, 0);
         report.reset();
         while (data.processLine(null)) {
+            //System.out.println(data.getProperties());
             final long id = db.createNode(data.getProperties());
             for (Map.Entry<String, Map<String, Object>> entry : data.getIndexData().entrySet()) {
                 final BatchInserterIndex index = indexFor(entry.getKey());
@@ -162,7 +163,7 @@ public class Importer {
             index.add(id(data.getValue(0)), properties);
             report.dots();
         }
-                
+
         report.finishImport("Done inserting into " + indexName + " Index");
     }
 
@@ -196,17 +197,19 @@ public class Importer {
     private void doImport() throws IOException {
         try {
             for (File file : config.getNodesFiles()) {
+                System.out.println("Importing "+ file.getName() + "...");
                 importNodes(createFileReader(file));
             }
 
             for (File file : config.getRelsFiles()) {
+                System.out.println("Importing "+ file.getName() + "...");
                 importRelationships(createFileReader(file));
             }
 
             for (IndexInfo indexInfo : config.getIndexInfos()) {
                 if (indexInfo.shouldImportFile()) importIndex(indexInfo);
             }
-		} finally {
+        } finally {
             finish();
         }
     }
